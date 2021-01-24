@@ -14,7 +14,7 @@ setup(
     description="MySql query builder and executor, based on aiomysql",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/ryazantseff/mysql-querymaker/archive/0.2.tar.gz",
+    url="https://github.com/ryazantseff/mysql-querymaker/archive/0.2.3.tar.gz",
     author="Maxim Ryazantsev",
     author_email="maxim.ryazancev@gmail.com",
     license="MIT",
