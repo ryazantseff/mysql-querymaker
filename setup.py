@@ -9,9 +9,9 @@ README = (HERE / "README.md").read_text()
 
 # This call to setup() does all the work
 setup(
-    name="query-maker",
-    version="0.1",
-    description="Read the latest Real Python tutorials",
+    name="QueryMaker",
+    version="0.2.3",
+    description="MySql query builder and executor, based on aiomysql",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/ryazantseff/mysql-querymaker/archive/0.2.tar.gz",
@@ -28,7 +28,6 @@ setup(
         'Intended Audience :: Developers',      
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',   
-        'Programming Language :: Python :: 3.7',    
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
     ],
