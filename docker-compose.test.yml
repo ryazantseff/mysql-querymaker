@@ -1,0 +1,16 @@
+version: '3'
+services:
+  db:
+    image: mysql:latest
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    ports:
+      - 4567:3306
+    command: --default-authentication-plugin=mysql_native_password
+  tests:
+    image: ryazantseff/query-maker-tests:v1
+    working_dir: /root
+    volumes:
+      - ./test:/root/test
+      - ./QueryMaker:/root/QueryMaker
+    command: bash -c "wait-for-it db:3306 && python3.9 -m unittest -v test.MyTest"

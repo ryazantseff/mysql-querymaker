@@ -10,25 +10,26 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="query-maker",
-    version="1.0.0",
+    version="0.1",
     description="Read the latest Real Python tutorials",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/realpython/reader",
+    url="https://github.com/ryazantseff/mysql-querymaker/archive/0.1.tar.gz",
     author="Maxim Ryazantsev",
     author_email="maxim.ryazancev@gmail.com",
     license="MIT",
-    classifiers=[
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
+    keywords = ['Mysql', 'Sql', 'Query', 'async'],   
+    install_requires=[
+        'asyncio',
+        'aiomysql',
     ],
-    packages=["reader"],
-    include_package_data=True,
-    install_requires=["feedparser", "html2text"],
-    entry_points={
-        "console_scripts": [
-            "realpython=reader.__main__:main",
-        ]
-    },
+    classifiers=[
+        'Development Status :: 3 - Alpha',      
+        'Intended Audience :: Developers',      
+        'Topic :: Software Development :: Build Tools',
+        'License :: OSI Approved :: MIT License',   
+        'Programming Language :: Python :: 3.7',    
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+    ],
 )
