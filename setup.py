@@ -14,7 +14,7 @@ setup(
     description="Read the latest Real Python tutorials",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/ryazantseff/mysql-querymaker/archive/0.1.tar.gz",
+    url="https://github.com/ryazantseff/mysql-querymaker/archive/0.2.tar.gz",
     author="Maxim Ryazantsev",
     author_email="maxim.ryazancev@gmail.com",
     license="MIT",
