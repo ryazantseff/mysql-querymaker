@@ -1,5 +1,5 @@
 import pathlib
-from setuptools import setup
+import setuptools
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -8,13 +8,13 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 # This call to setup() does all the work
-setup(
-    name="QueryMaker",
-    version="0.2.3",
+setuptools.setup(
+    name="query-maker-ryazantseff",
+    version="0.2.5",
     description="MySql query builder and executor, based on aiomysql",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/ryazantseff/mysql-querymaker/archive/0.2.3.tar.gz",
+    url="https://github.com/ryazantseff/mysql-querymaker",
     author="Maxim Ryazantsev",
     author_email="maxim.ryazancev@gmail.com",
     license="MIT",
@@ -23,6 +23,7 @@ setup(
         'asyncio',
         'aiomysql',
     ],
+    packages=setuptools.find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',      
         'Intended Audience :: Developers',      

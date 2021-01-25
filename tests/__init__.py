@@ -1,6 +1,5 @@
 import asyncio, logging, unittest
-from QueryMaker.MySql import MySql
-from QueryMaker.table import Table
+from query_maker import MySql, Table
 
 class MyTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):

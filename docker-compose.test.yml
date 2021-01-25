@@ -11,6 +11,6 @@ services:
     image: ryazantseff/query-maker-tests:v1
     working_dir: /root
     volumes:
-      - ./test:/root/test
-      - ./QueryMaker:/root/QueryMaker
-    command: bash -c "wait-for-it db:3306 && python3.9 -m unittest -v test.MyTest"
+      - ./tests:/root/tests
+      - ./query_maker:/root/query_maker
+    command: bash -c "wait-for-it db:3306 && python3.9 -m unittest -v tests.MyTest"
