@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setuptools.setup(
     name="query-maker-ryazantseff",
-    version="0.2.5",
+    version="0.3.0",
     description="MySql query builder and executor, based on aiomysql",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -22,6 +22,8 @@ setuptools.setup(
     install_requires=[
         'asyncio',
         'aiomysql',
+        'sqlalchemy',
+        'pandas'
     ],
     packages=setuptools.find_packages(),
     classifiers=[

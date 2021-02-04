@@ -79,14 +79,14 @@ class Query:
     def InsertIgnore(self, table, fields):
         self.type = 'insert'
         F = "({})".format(', '.join(fields))
-        self.Q = "INSERT IGNORE INTO {}.{} {}".format(self.dbName, table, F)
+        self.Q = f"INSERT IGNORE INTO {self.dbName}.{table} {F}"
         return self
 
     def Values(self, vals):
         R = []
         for r in vals:
-            R.append("({})".format(', '.join(map(lambda i: "'{}'".format(i), r))))
-        self.Q = "{} VALUES {}".format(self.Q, ', '.join(R))
+            R.append("({})".format(', '.join(map(lambda i: f"'{i}'", r))))
+        self.Q = f"{self.Q} VALUES {', '.join(R)}"
         return self
 
     def Select(self, fields):

@@ -3,5 +3,5 @@ LABEL maintainer="Maxim Ryazantsev <maxim.ryazancev@gmail.com>"
 
 RUN apt-get update \
     && apt-get install -y libldap2-dev libsasl2-dev libkrb5-dev wait-for-it\
-    && pip3.9 install aiomysql asyncio
+    && pip3.9 install aiomysql asyncio sqlalchemy pandas
 EXPOSE 80/tcp

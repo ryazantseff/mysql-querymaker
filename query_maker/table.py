@@ -1,4 +1,4 @@
-import logging
+import logging, itertools
 
 class Table:
     def __init__(self, table):

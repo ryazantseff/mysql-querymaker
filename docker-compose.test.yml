@@ -13,4 +13,4 @@ services:
     volumes:
       - ./tests:/root/tests
       - ./query_maker:/root/query_maker
-    command: bash -c "wait-for-it db:3306 && python3.9 -m unittest -v tests.MyTest"
+    command: bash -c "wait-for-it db:3306 && python3.9 -m unittest -v tests.Alchemy"

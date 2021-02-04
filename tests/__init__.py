@@ -1,9 +1,10 @@
 import asyncio, logging, unittest
 from query_maker import MySql, Table
+from .alchemy import Alchemy
 
 class MyTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        # logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
         loop = asyncio.get_event_loop()
         self.db = MySql(
             'db',
@@ -55,6 +56,27 @@ class MyTest(unittest.IsolatedAsyncioTestCase):
             {'Field': 'ad', 'Type': 'tinyint(1)', 'Null': 'YES', 'Key': '', 'Default': '0', 'Extra': ''}
         )
 
+    async def test_insertBlob(self):
+        await self.db.createTableIfNotExists('blobInsertTable', [
+            "id int(11) NOT NULL AUTO_INCREMENT",
+            "name varchar(100) NOT NULL",
+            "image BLOB DEFAULT NULL",
+            "PRIMARY KEY (id)"
+        ])
+        self.assertTrue(Table(await self.db.showTables()).contains('Tables_in_Test', 'blobInsertTable'))
+        # (
+        #     await self.db.QueryMaker
+        #         .Insert('blobInsertTable', ['name', 'image'])
+        #         .Values([['testName', b'\xd0\x91\xd0\xb0\xd0\xb9\xd1\x82\xd1\x8b']])
+        #         .Run(debug=True)
+        # )
+        await self.db.query("INSERT INTO blobInsertTabe (name, image) VALUES (%s)", args = (
+            ('testName2', b'\xd0\x91\xd0\xb0\xd0\xb9\xd1\x82\xd1\x8b'),
+        ), _type='insert')
+        self.assertEqual(
+            Table(await self.db.getEverythingFrom('blobInsertTable')).findRow('name', 'testName'),
+            {'name': 'testName', 'image': b'\xd0\x91\xd0\xb0\xd0\xb9\xd1\x82\xd1\x8b'}
+        )
 
 if __name__ == '__main__':
     unittest.main()
