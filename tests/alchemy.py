@@ -6,7 +6,7 @@ from query_maker import MySql, Table
 
 class Alchemy (unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        # logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
         loop = asyncio.get_event_loop()
         self.db = MySql(
             host = 'db',
@@ -18,6 +18,94 @@ class Alchemy (unittest.IsolatedAsyncioTestCase):
         await self.db.createDbIfNotExists()
         
 
+    async def test_deleteSelect(self):
+        await self.db.SaQuery('''CREATE TABLE IF NOT EXISTS `saTable4` (
+            `id` serial PRIMARY KEY,
+            `val` varchar(255)
+        )''')
+
+        metadata = sa.MetaData()
+
+        tbl = sa.Table('saTable4', metadata,
+            sa.Column('id', sa.Integer, primary_key=True),
+            sa.Column('val', sa.String(255))
+        )
+        
+        res = await self.db.SaQuery([
+            tbl.insert().values([{'val':'testToDel'}, {'val':'testToDel2'}]),
+            sa.select([tbl])
+        ], echo=True)
+
+        df = pd.DataFrame(res[0])
+        self.assertTrue('testToDel' in df['val'].values)
+        self.assertTrue('testToDel2' in df['val'].values)
+
+        res = await self.db.SaQuery([
+            tbl.delete().where(tbl.c['val'] == 'testToDel'),
+            sa.select([tbl])
+        ], echo=True)
+        logging.debug(res)
+
+
+
+    async def test_insertSelect(self):
+        await self.db.SaQuery('''CREATE TABLE IF NOT EXISTS `saTable3` (
+            `id` serial PRIMARY KEY,
+            `val` varchar(255)
+        )''')
+
+        metadata = sa.MetaData()
+
+        tbl = sa.Table('saTable3', metadata,
+            sa.Column('id', sa.Integer, primary_key=True),
+            sa.Column('val', sa.String(255))
+        )
+        
+        res = await self.db.SaQuery([
+            tbl.insert().values([{'val':'testToDel'}, {'val':'testToDel2'}]),
+            sa.select([tbl])
+        ], echo=True)
+
+        # logging.debug(res)
+        df = pd.DataFrame(res[0])
+        self.assertTrue('testToDel' in df['val'].values)
+        self.assertTrue('testToDel2' in df['val'].values)
+
+
+    async def test_delete(self):
+        await self.db.SaQuery('''CREATE TABLE IF NOT EXISTS `saTable2` (
+            `id` serial PRIMARY KEY,
+            `val` varchar(255)
+        )''')
+
+        metadata = sa.MetaData()
+
+        tbl = sa.Table('saTable2', metadata,
+            sa.Column('id', sa.Integer, primary_key=True),
+            sa.Column('val', sa.String(255))
+        )
+        
+        await self.db.SaQuery([
+            tbl.insert().values([{'val':'testToDel'}, {'val':'testToDel2'}])
+        ], echo=True)
+
+        df = pd.DataFrame(await self.db.SaQuery(
+            sa.select([tbl]), echo=True
+        ))
+        self.assertTrue('testToDel' in df['val'].values)
+        self.assertTrue('testToDel2' in df['val'].values)
+
+        await self.db.SaQuery(
+            tbl.delete().where(tbl.c['val'] == 'testToDel')
+        )
+        df = pd.DataFrame(await self.db.SaQuery(
+            sa.select([tbl])
+        ))
+
+        self.assertFalse('testToDel' in df['val'].values)
+        self.assertTrue('testToDel2' in df['val'].values)
+
+
     async def test_create_db(self):
         self.assertTrue(Table(await self.db.showDatabases()).contains('Database', 'saTest'))
 
@@ -27,7 +115,7 @@ class Alchemy (unittest.IsolatedAsyncioTestCase):
         tbl = sa.Table('saTable', metadata,
             sa.Column('id', sa.Integer, primary_key=True),
             sa.Column('val', sa.String(255)),
-            sa.Column('bin', sa.Binary))
+            sa.Column('bin', sa.LargeBinary))
 
         await self.db.SaQuery('''CREATE TABLE IF NOT EXISTS `saTable` (
             `id` serial PRIMARY KEY,
@@ -37,14 +125,15 @@ class Alchemy (unittest.IsolatedAsyncioTestCase):
 
        
         await self.db.SaQuery(
-            tbl.insert().values(val='aghsdgfhjadgs', bin = b'\xd0\x91\xd0\xb0\xd0\xb9\xd1\x82\xd1\x8b')
+            tbl.insert().values(val='aghsdgfhjadgs', bin = b'\xd0\x91\xd0\xb0\xd0\xb9\xd1\x82\xd1\x8b'),
+            echo=True
         )
 
         await self.db.SaQuery([
             tbl.insert().values(val='abc'),
             tbl.insert().values(val='abasdfsdf'),
             tbl.insert().values(val='abqewrwerqewrc')
-        ])
+        ], echo=True)
 
         for row in (await self.db.SaQuery(tbl.select())):
             logging.debug(row.bin)
@@ -94,8 +183,8 @@ class Alchemy (unittest.IsolatedAsyncioTestCase):
             users.insert().values(name='User3'),
             users.insert().values(name='User4'),
             groups.insert().values(name='Group1'),
-            groups.insert().values(name='Group2'),
-        ])
+            groups.insert().values(name='Group2')
+        ], echo=True)
 
         await self.db.SaQuery([
             usersInGroup.insert().from_select([usersInGroup.c.userId, usersInGroup.c.groupId], 
@@ -113,16 +202,43 @@ class Alchemy (unittest.IsolatedAsyncioTestCase):
             usersInGroup.c.groupId == groups.c.id,
             groups.c.name == 'Group1'
         ))
+        
         sel2 = sa.select([users.c.name, groups.c.name], use_labels=True).where(sa.and_(
             usersInGroup.c.userId == users.c.id,
             usersInGroup.c.groupId == groups.c.id,
             groups.c.name == 'Group2'
         ))
 
-        gr1 = pd.DataFrame(await self.db.SaQuery(sel1))
-        gr2 = pd.DataFrame(await self.db.SaQuery(sel2))
+        gr1 = pd.DataFrame(await self.db.SaQuery(sel1, echo=True))
+        gr2 = pd.DataFrame(await self.db.SaQuery(sel2, echo=True))
 
         logging.warning(f'\n{gr1.to_string()}')
         logging.warning(f'\n{gr2.to_string()}')
 
-       
+    async def test_updateEntry(self):
+        await self.db.SaQuery('''CREATE TABLE IF NOT EXISTS `updateTest` (
+            `id` serial PRIMARY KEY,
+            `val` varchar(255) UNIQUE
+        )''')
+
+        metadata = sa.MetaData()
+
+        tbl = sa.Table('updateTest', metadata,
+            sa.Column('id', sa.Integer, primary_key=True),
+            sa.Column('val', sa.String(255))
+        )
+        
+        resId = await self.db.SaQuery([
+            tbl.insert().values([{'val':'goingToUpdate'}]),
+            sa.select([tbl.c.id]).where(tbl.c.val == 'goingToUpdate')
+        ], echo=True)
+
+        res = await self.db.SaQuery([
+            tbl.update().where(tbl.c.val == 'goingToUpdate').values(val='updated'),
+            sa.select([tbl])
+        ], echo=True)
+
+        # logging.debug(res[0][0])
+        self.assertTrue(res[0][0][1] == 'updated')
+        # df = pd.DataFrame(res[0])
+        # self.assertTrue('testToDel2' in df['val'].values)

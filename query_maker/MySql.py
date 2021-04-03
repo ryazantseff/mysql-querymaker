@@ -12,40 +12,44 @@ class MySql:
         self.loop = loop
         self.QueryMaker = QueryMaker(dbName, self.query)
         
-    async def SaEngine(self):
+    async def SaEngine(self, **kwargs):
         self.engine = await create_engine(
             user=self.user,
             db=self.dbName,
             host=self.host,
             password=self.pw,
-            loop=self.loop,
-            echo = True
+            **kwargs
         )
         return self.engine
 
-    async def SaQuery(self, query):
+    async def SaQuery(self, query, **kwargs):
         try:
-            await self.SaEngine()
+            await self.SaEngine(**kwargs)
             async with self.engine.acquire() as conn:
-                if isinstance(query, list):
-                    result = []
-                    for i in query:
-                        if isinstance(i, sa.sql.selectable.Select):
-                            result.append(await (await conn.execute(i)).fetchall())
-                        elif isinstance(i, sa.sql.dml.Insert):
-                            await conn.execute(i)
-                        elif isinstance(i, str):
-                            await conn.execute(i)
-                    await conn.execute("commit")
-                    return result
-                elif isinstance(query, sa.sql.dml.Insert):
-                    await conn.execute(query)
-                    await conn.execute("commit")
-                elif isinstance(query, str):
-                    await conn.execute(query)
-                    await conn.execute("commit")
-                elif isinstance(query, sa.sql.selectable.Select):
-                    return await (await conn.execute(query)).fetchall()
+                async with conn.begin() as transaction:
+                    # logging.debug(type(query))
+                    if isinstance(query, list):
+                        result = []
+                        for i in query:
+                            if isinstance(i, sa.sql.selectable.Select):
+                                result.append(await conn.execute(i))
+                            elif isinstance(i, sa.sql.dml.Insert) or \
+                            isinstance(i, sa.sql.dml.Delete) or isinstance(i, sa.sql.dml.Update):
+                                await conn.execute(i)
+                            elif isinstance(i, str):
+                                await conn.execute(i)
+                            else:
+                                raise ValueError('No one query was executed from list')
+                        return [await x.fetchall() for x in result]
+                    elif isinstance(query, sa.sql.dml.Insert) or \
+                    isinstance(query, sa.sql.dml.Delete) or isinstance(query, sa.sql.dml.Update):
+                        await conn.execute(query)
+                    elif isinstance(query, str):
+                        await conn.execute(query)
+                    elif isinstance(query, sa.sql.selectable.Select):
+                        result = await conn.execute(query)
+                        return await result.fetchall()
+                    await transaction.commit()
         except Exception as e:
             logging.debug(str(e))
         finally:
@@ -53,7 +57,6 @@ class MySql:
                 self.engine.close()
                 await self.engine.wait_closed()
     
-
     async def connect(self, _type):
         logging.debug(f"db pass is {self.pw}")
         pool = await aiomysql.create_pool(
